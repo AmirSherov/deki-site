@@ -1,4 +1,4 @@
-site.deki.one {
+http://site.deki.one {
     root * /srv
     file_server
     encode gzip
