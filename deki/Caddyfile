@@ -1,4 +1,4 @@
-app.deki.one {
+site.deki.one {
     root * /srv
     file_server
     encode gzip
