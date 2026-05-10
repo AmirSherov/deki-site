@@ -1,0 +1,298 @@
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: .12 });
+document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+
+const tEl = document.getElementById('time');
+function tick() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  tEl.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} · MSK`;
+}
+tick();
+setInterval(tick, 1000);
+
+const blobs = document.querySelectorAll('.hero .blob');
+window.addEventListener('mousemove', (e) => {
+  const x = (e.clientX / window.innerWidth - .5) * 30;
+  const y = (e.clientY / window.innerHeight - .5) * 30;
+  blobs.forEach((b, i) => {
+    b.style.transform = `translate(${x * (i ? -1 : 1)}px, ${y * (i ? -1 : 1)}px)`;
+  });
+}, { passive: true });
+
+/* ── i18n ── */
+const translations = {
+  ru: {
+    'nav-problem': 'Проблема',
+    'nav-solution': 'Решение',
+    'nav-audiences': 'Кому',
+    'nav-studio': 'Студия',
+    'nav-manifesto': 'Видение',
+    'nav-open-tg': 'Открыть в Telegram',
+    'nav-community': 'Сообщество',
+
+    'hero-tag-for': 'для&nbsp;Telegram',
+    'hero-headline': 'Самый <em>короткий</em> путь<br />от <span class="stroke">артиста</span><br />к слушателю.',
+    'hero-lede': 'DEKI — это <strong>медиа-слой поверх Telegram</strong>. Артисты загружают треки и клипы как обычно, в свой канал. DEKI собирает всё в единый стриминг — без посредников, без алгоритмов, без лишних движений.',
+    'hero-cta1': 'Попробовать DEKI',
+    'hero-cta2': 'Как это работает',
+    'hero-platform-android': '✓ Android',
+    'hero-platform-pc': '✓ ПК · Telegram Web',
+    'hero-platform-ios': '✕ iOS — скоро?',
+    'hero-scroll': 'прокрутите вниз — расскажем подробно',
+
+    'ticker-music': 'МУЗЫКА',
+    'ticker-video': 'ВИДЕО',
+    'ticker-live': 'ЛАЙВЫ',
+    'ticker-studio': 'СТУДИЯ',
+    'ticker-playlists': 'ПЛЕЙЛИСТЫ',
+    'ticker-donates': 'ДОНАТЫ',
+
+    'float-f1': 'новый трек · @kip',
+    'float-f2': '48 прослушиваний',
+    'float-f3': 'синглы · 2',
+    'float-f4': 'донаты · скоро',
+
+    'problem-num': '01 · ПРОБЛЕМА',
+    'problem-h2': 'Telegram сегодня —<br />это <em>хаос</em> контента.',
+    'problem-p': 'Музыка, клипы, лайвы разбросаны по сотням каналов. Чтобы быть в теме, нужно держать у себя бесконечный список чатов, постоянно переключаться и бояться что-то пропустить. Это не discovery — это выживание.',
+    'problem-c1-h3': 'Сотни каналов и ни одной ленты',
+    'problem-c1-p': 'Релизы тонут в сообщениях. Найти что-то новое сложнее, чем сделать самому.',
+    'problem-c2-h3': 'Алгоритмы душат охваты',
+    'problem-c2-p': 'На больших платформах артист — заложник алгоритмов и непрозрачных рекомендаций. Аудитория принадлежит платформе, а не автору: сегодня тебя пушат, завтра — хоронят в ленте. Прямой связи со слушателем почти нет.',
+    'problem-c3-h3': 'Никакого UX для медиа',
+    'problem-c3-p': 'Telegram отлично работает с текстом и стикерами, но плеер, дискавери и плейлисты — это боль.',
+    'problem-verdict': 'Артистам нужна свобода.<br />Слушателям — нормальный <em>стриминг</em>.',
+    'problem-verdict-btn': 'Как DEKI это решает →',
+
+    'solution-num': '02 · РЕШЕНИЕ',
+    'solution-h2': 'Слой поверх <em>Telegram</em>,<br />превращающий хаос в&nbsp;стриминг.',
+    'solution-p': 'DEKI читает приватные каналы артистов, собирает музыку и видео в студию и предлагает готовый релиз. Артист подтверждает — и контент появляется в едином медиа-фиде. Слушатели получают нормальный плеер.',
+    'solution-s1-h4': 'Артист загружает контент в свой канал — как обычно',
+    'solution-s1-p': 'Никаких новых привычек, никакого стресса. Те же mp3, mp4 — треки и клипы.',
+    'solution-s2-h4': 'Бот автоматически собирает музыку и видео',
+    'solution-s2-p': 'Файлы попадают в студию, DEKI предлагает структуру — артист распределяет по альбомам, синглам и клипам.',
+    'solution-s3-h4': 'Контент структурируется в удобный интерфейс',
+    'solution-s3-p': 'Профили, обложки, плейлисты, лайки и комментарии. Прямые эфиры идут прямо в приложении — не с канала.',
+    'solution-s4-h4': 'Слушатель видит всё новое в одном фиде',
+    'solution-s4-p': 'Не нужно прыгать между чатами. Открыл DEKI — увидел всё свежее и сразу включил.',
+
+    'audiences-num': '03 · ЦЕННОСТЬ',
+    'audiences-h2': 'Один продукт —<br />две стороны истории.',
+    'audiences-listener-h3': '<span class="for">Для слушателя</span>наконец-то<br />удобно',
+    'audiences-listener-li1': 'экономия времени — всё в одной ленте',
+    'audiences-listener-li2': 'нормальный UX — плеер, плейлисты, дискавери',
+    'audiences-listener-li3': 'ощущение, что у Telegram наконец-то появилась музыка',
+    'audiences-listener-li4': 'прямые лайки, комменты и связь с артистами',
+    'audiences-artist-h3': '<span class="for">Для артиста</span>дистрибуция<br />без посредников',
+    'audiences-artist-li1': 'публикация в один клик — подтвердил и контент уже в фиде',
+    'audiences-artist-li2': 'прямой контакт с аудиторией, без алгоритмов',
+    'audiences-artist-li3': 'контроль над контентом и метаданными',
+    'audiences-artist-li4': 'студия аналитики из коробки + <span class="soon">донаты — скоро</span>',
+
+    'studio-num': '04 · СТУДИЯ АРТИСТА',
+    'studio-h2': 'От загрузки до аудитории —<br />в <em>пару кликов</em>.',
+    'studio-p': 'Артист подключает свой приватный канал в Telegram и добавляет DEKI Music Bot как администратора — иначе бот не видит контент. После этого просто загружай треки и видео как обычно: бот подхватывает их автоматически и переносит в студию — дальше ты сам оформляешь релиз и публикуешь его.',
+    'studio-s1-h5': 'Подключи свой канал',
+    'studio-s1-p': 'Добавляешь DEKI Music Bot админом — занимает 30 секунд.',
+    'studio-s2-h5': 'Загружай как обычно',
+    'studio-s2-p': 'Кидаешь треки и видео в свой канал. Никаких форм, никаких CMS.',
+    'studio-s3-h5': 'Артист оформляет релиз',
+    'studio-s3-p': 'В студии ты сам прикрепляешь обложки, распределяешь треки и настраиваешь профиль — полный контроль.',
+    'studio-s4-h5': 'Публикация в один клик',
+    'studio-s4-p': 'Жмёшь «Опубликовать» — и контент уже в общей ленте DEKI.',
+
+    'manifesto-num': '05 · ВИДЕНИЕ',
+    'manifesto-h2': 'DEKI — не<br /><span class="stroke">ещё одно</span><br />приложение.<br /><em>Это недостающий слой</em>,',
+    'manifesto-p': 'которого всегда не хватало Telegram. Музыкальная экосистема, где звук снова становится живым: <strong>просто, быстро и напрямую</strong> — от автора к слушателю, без алгоритмов, лейблов и посредников.',
+    'manifesto-why-h4': '★ Почему именно сейчас',
+    'manifesto-why-l1': '/01 · platform',
+    'manifesto-why-v1': 'Telegram стабильно растёт и стал основной площадкой для инди-сцены и комьюнити.',
+    'manifesto-why-l2': '/02 · users',
+    'manifesto-why-v2': 'Пользователи устали от тяжёлых стримингов с рекламой и навязанными плейлистами.',
+    'manifesto-why-l3': '/03 · scene',
+    'manifesto-why-v3': 'Независимая сцена ищет свободу — место, где артист и слушатель встречаются напрямую.',
+
+    'cta-num': '★ ★ ★',
+    'cta-h2': 'Открой DEKI<br />и слушай <em>напрямую</em>.',
+    'cta-p': 'Telegram уже у тебя в кармане. Осталось добавить слой, превращающий его в музыкальную платформу нового поколения.',
+    'cta-btn1': 'Запустить в Telegram',
+    'cta-btn2': 'Я артист → подключить канал',
+
+    'footer-label': 'МЕДИА-СЛОЙ В TELEGRAM',
+    'footer-status': '● онлайн · v 0.1 beta',
+    'footer-col1-h6': 'Продукт',
+    'footer-col1-a1': 'Проблема',
+    'footer-col1-a2': 'Решение',
+    'footer-col1-a3': 'Кому',
+    'footer-col1-a4': 'Студия артиста',
+    'footer-col2-h6': 'Артистам',
+    'footer-col2-a1': 'Подключить канал',
+    'footer-col2-a2': 'DEKI Music Bot',
+    'footer-col2-a3': 'Гайд по релизу',
+    'footer-col2-a4': 'Донаты и монетизация',
+    'footer-col3-h6': 'Сообщество',
+    'footer-col3-a1': 'Telegram-канал',
+    'footer-col3-a2': 'Чат комьюнити',
+    'footer-col3-a3': 'Подкаст DEKI',
+    'footer-col3-a4': 'Контакт',
+    'footer-col4-h6': 'Контакты',
+    'footer-col4-a1': 'hi@deki.app',
+    'footer-col4-a2': '@deki',
+    'footer-col4-a3': 'пресс-кит',
+    'footer-col4-a4': 'для прессы',
+    'footer-legal': '© 2026 DEKI · все права <span style="color: var(--green)">слушателей</span> и артистов защищены',
+  },
+  en: {
+    'nav-problem': 'Problem',
+    'nav-solution': 'Solution',
+    'nav-audiences': 'For Whom',
+    'nav-studio': 'Studio',
+    'nav-manifesto': 'Vision',
+    'nav-open-tg': 'Open in Telegram',
+    'nav-community': 'Community',
+
+    'hero-tag-for': 'for&nbsp;Telegram',
+    'hero-headline': 'The <em>shortest</em> path<br />from <span class="stroke">artist</span><br />to listener.',
+    'hero-lede': 'DEKI is a <strong>media layer on top of Telegram</strong>. Artists upload tracks and clips as usual, to their channel. DEKI aggregates everything into a unified stream — no middlemen, no algorithms, no extra steps.',
+    'hero-cta1': 'Try DEKI',
+    'hero-cta2': 'How it works',
+    'hero-platform-android': '✓ Android',
+    'hero-platform-pc': '✓ PC · Telegram Web',
+    'hero-platform-ios': '✕ iOS — coming soon?',
+    'hero-scroll': 'scroll down — we\'ll tell you more',
+
+    'ticker-music': 'MUSIC',
+    'ticker-video': 'VIDEO',
+    'ticker-live': 'LIVES',
+    'ticker-studio': 'STUDIO',
+    'ticker-playlists': 'PLAYLISTS',
+    'ticker-donates': 'DONATIONS',
+
+    'float-f1': 'new track · @kip',
+    'float-f2': '48 plays',
+    'float-f3': 'singles · 2',
+    'float-f4': 'donations · soon',
+
+    'problem-num': '01 · PROBLEM',
+    'problem-h2': 'Telegram today —<br />is a <em>chaos</em> of content.',
+    'problem-p': 'Music, clips, lives are scattered across hundreds of channels. To stay in the loop, you need an endless list of chats, constantly switching and fearing to miss something. This is not discovery — this is survival.',
+    'problem-c1-h3': 'Hundreds of channels and no feed',
+    'problem-c1-p': 'Releases drown in messages. Finding something new is harder than making it yourself.',
+    'problem-c2-h3': 'Algorithms throttle reach',
+    'problem-c2-p': 'On big platforms the artist is a hostage to algorithms and opaque recommendations. The audience belongs to the platform, not the creator: today they push you, tomorrow — bury you in the feed. Direct connection with listeners is almost gone.',
+    'problem-c3-h3': 'No UX for media',
+    'problem-c3-p': 'Telegram works great with text and stickers, but the player, discovery and playlists — are painful.',
+    'problem-verdict': 'Artists need freedom.<br />Listeners need proper <em>streaming</em>.',
+    'problem-verdict-btn': 'How DEKI solves this →',
+
+    'solution-num': '02 · SOLUTION',
+    'solution-h2': 'A layer on top of <em>Telegram</em>,<br />turning chaos into&nbsp;streaming.',
+    'solution-p': 'DEKI reads artists\' private channels, collects music and video into a studio and offers a ready release. The artist confirms — and content appears in a unified media feed. Listeners get a proper player.',
+    'solution-s1-h4': 'Artist uploads content to their channel — as usual',
+    'solution-s1-p': 'No new habits, no stress. Same mp3, mp4 — tracks and clips.',
+    'solution-s2-h4': 'Bot automatically collects music and video',
+    'solution-s2-p': 'Files land in the studio, DEKI suggests structure — artist distributes by albums, singles and clips.',
+    'solution-s3-h4': 'Content is structured into a convenient interface',
+    'solution-s3-p': 'Profiles, covers, playlists, likes and comments. Livestreams go directly in the app — not from a channel.',
+    'solution-s4-h4': 'Listener sees all new content in one feed',
+    'solution-s4-p': 'No need to jump between chats. Open DEKI — see everything fresh and play immediately.',
+
+    'audiences-num': '03 · VALUE',
+    'audiences-h2': 'One product —<br />two sides of the story.',
+    'audiences-listener-h3': '<span class="for">For listener</span>finally<br />convenient',
+    'audiences-listener-li1': 'time saving — everything in one feed',
+    'audiences-listener-li2': 'proper UX — player, playlists, discovery',
+    'audiences-listener-li3': 'feeling that Telegram finally has music',
+    'audiences-listener-li4': 'direct likes, comments and connection with artists',
+    'audiences-artist-h3': '<span class="for">For artist</span>distribution<br />without middlemen',
+    'audiences-artist-li1': 'one-click publishing — confirmed and content is in the feed',
+    'audiences-artist-li2': 'direct contact with audience, no algorithms',
+    'audiences-artist-li3': 'control over content and metadata',
+    'audiences-artist-li4': 'analytics studio out of the box + <span class="soon">donations — coming soon</span>',
+
+    'studio-num': '04 · ARTIST STUDIO',
+    'studio-h2': 'From upload to audience —<br />in <em>a few clicks</em>.',
+    'studio-p': 'The artist connects their private Telegram channel and adds DEKI Music Bot as an admin — otherwise the bot can\'t see the content. After that just upload tracks and video as usual: the bot picks them up automatically and moves them to the studio — then you set up the release and publish it yourself.',
+    'studio-s1-h5': 'Connect your channel',
+    'studio-s1-p': 'Add DEKI Music Bot as admin — takes 30 seconds.',
+    'studio-s2-h5': 'Upload as usual',
+    'studio-s2-p': 'Drop tracks and video into your channel. No forms, no CMS.',
+    'studio-s3-h5': 'Artist sets up the release',
+    'studio-s3-p': 'In the studio you attach covers, arrange tracks and set up your profile — full control.',
+    'studio-s4-h5': 'Publish in one click',
+    'studio-s4-p': 'Hit "Publish" — and content is already in the DEKI feed.',
+
+    'manifesto-num': '05 · VISION',
+    'manifesto-h2': 'DEKI is not<br /><span class="stroke">just another</span><br />app.<br /><em>It\'s the missing layer</em>,',
+    'manifesto-p': 'that Telegram always lacked. A music ecosystem where sound comes alive again: <strong>simple, fast and direct</strong> — from creator to listener, without algorithms, labels and middlemen.',
+    'manifesto-why-h4': '★ Why right now',
+    'manifesto-why-l1': '/01 · platform',
+    'manifesto-why-v1': 'Telegram is steadily growing and has become the primary platform for the indie scene and communities.',
+    'manifesto-why-l2': '/02 · users',
+    'manifesto-why-v2': 'Users are tired of heavy streaming services with ads and imposed playlists.',
+    'manifesto-why-l3': '/03 · scene',
+    'manifesto-why-v3': 'The independent scene seeks freedom — a place where artist and listener meet directly.',
+
+    'cta-num': '★ ★ ★',
+    'cta-h2': 'Open DEKI<br />and listen <em>directly</em>.',
+    'cta-p': 'Telegram is already in your pocket. All that\'s left is to add the layer that turns it into a next-generation music platform.',
+    'cta-btn1': 'Launch in Telegram',
+    'cta-btn2': 'I\'m an artist → connect channel',
+
+    'footer-label': 'MEDIA LAYER IN TELEGRAM',
+    'footer-status': '● online · v 0.1 beta',
+    'footer-col1-h6': 'Product',
+    'footer-col1-a1': 'Problem',
+    'footer-col1-a2': 'Solution',
+    'footer-col1-a3': 'For Whom',
+    'footer-col1-a4': 'Artist Studio',
+    'footer-col2-h6': 'For Artists',
+    'footer-col2-a1': 'Connect channel',
+    'footer-col2-a2': 'DEKI Music Bot',
+    'footer-col2-a3': 'Release guide',
+    'footer-col2-a4': 'Donations and monetization',
+    'footer-col3-h6': 'Community',
+    'footer-col3-a1': 'Telegram channel',
+    'footer-col3-a2': 'Community chat',
+    'footer-col3-a3': 'DEKI Podcast',
+    'footer-col3-a4': 'Contact',
+    'footer-col4-h6': 'Contacts',
+    'footer-col4-a1': 'hi@deki.app',
+    'footer-col4-a2': '@deki',
+    'footer-col4-a3': 'press kit',
+    'footer-col4-a4': 'for press',
+    'footer-legal': '© 2026 DEKI · all rights of <span style="color: var(--green)">listeners</span> and artists reserved',
+  }
+};
+
+let currentLang = 'ru';
+
+function applyLang(lang) {
+  const t = translations[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+  document.querySelectorAll('[data-img-ru]').forEach(el => {
+    const src = lang === 'ru' ? el.dataset.imgRu : el.dataset.imgEn;
+    if (el.tagName === 'IMG') {
+      el.src = src;
+    } else {
+      el.style.backgroundImage = `url('${src}')`;
+    }
+  });
+  document.documentElement.lang = lang;
+  currentLang = lang;
+  const btn = document.getElementById('lang-toggle');
+  if (btn) btn.textContent = lang === 'ru' ? 'EN' : 'RU';
+}
+
+document.getElementById('lang-toggle').addEventListener('click', () => {
+  applyLang(currentLang === 'ru' ? 'en' : 'ru');
+});

@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>DEKI — медиа-слой в Telegram</title>
+    <meta
+      name="description"
+      content="DEKI — слой поверх Telegram, превращающий разрозненные каналы в единую медиа-платформу. Самый короткий путь от артиста к слушателю."
+    />
+    <meta property="og:title" content="DEKI — медиа-слой в Telegram" />
+    <meta
+      property="og:description"
+      content="Самый короткий путь от артиста к слушателю."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="nav">
+      <div class="left">
+        <a href="#" class="logo" aria-label="DEKI">
+          <img class="logo-img" src="01_Logotype/Logotype.png" alt="DEKI" />
+        </a>
+      </div>
+      <nav class="links">
+        <a href="#problem" data-i18n="nav-problem">Проблема</a>
+        <a href="#solution" data-i18n="nav-solution">Решение</a>
+        <a href="#audiences" data-i18n="nav-audiences">Кому</a>
+        <a href="#studio" data-i18n="nav-studio">Студия</a>
+        <a href="#manifesto" data-i18n="nav-manifesto">Видение</a>
+      </nav>
+      <div class="right">
+        <button id="lang-toggle" class="btn-lang">EN</button>
+        <a
+          class="btn"
+          href="https://t.me/Deki_music_bot?startapp"
+          target="_blank"
+          rel="noopener"
+          ><span data-i18n="nav-open-tg">Открыть в Telegram</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M5 12h14m0 0l-6-6m6 6l-6 6"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            /></svg
+        ></a>
+        <a
+          class="btn btn-ghost"
+          href="https://t.me/deki_community"
+          target="_blank"
+          rel="noopener"
+          data-i18n="nav-community">Сообщество</a>
+      </div>
+    </header>
+
+    <section class="hero" id="hero">
+      <div class="bg">
+        <div class="blob a"></div>
+        <div class="blob b"></div>
+        <div class="grid"></div>
+      </div>
+
+      <div class="wrap hero-grid">
+        <div class="hero-text">
+          <div class="tag-row" data-reveal>
+            <span class="tag green">●&nbsp;&nbsp;LIVE BETA</span>
+            <span class="tag">v 0.1 · 2026</span>
+            <span class="tag" data-i18n-html="hero-tag-for">для&nbsp;Telegram</span>
+          </div>
+          <h1 class="headline" data-reveal data-delay="1" data-i18n-html="hero-headline">
+            Самый <em>короткий</em> путь<br />
+            от <span class="stroke">артиста</span><br />
+            к слушателю.
+          </h1>
+          <p class="lede" data-reveal data-delay="2" data-i18n-html="hero-lede">
+            DEKI — это <strong>медиа-слой поверх Telegram</strong>. Артисты
+            загружают треки и клипы как обычно, в свой канал. DEKI собирает всё
+            в единый стриминг — без посредников, без алгоритмов, без лишних
+            движений.
+          </p>
+          <div class="cta-row" data-reveal data-delay="3">
+            <a
+              class="btn"
+              href="https://t.me/Deki_music_bot?startapp"
+              target="_blank"
+              rel="noopener"
+              data-i18n="hero-cta1"
+              >Попробовать DEKI</a
+            >
+            <a class="btn ghost" href="#solution" data-i18n="hero-cta2">Как это работает</a>
+          </div>
+          <div class="platform-row" data-reveal data-delay="3">
+            <span class="platform on" data-i18n="hero-platform-android">✓ Android</span>
+            <span class="platform on" data-i18n="hero-platform-pc">✓ ПК · Telegram Web</span>
+            <span class="platform off" data-i18n="hero-platform-ios">✕ iOS — скоро?</span>
+          </div>
+          <div class="scroll-cue" data-reveal data-delay="3">
+            <span class="dot"></span> <span data-i18n="hero-scroll">прокрутите вниз — расскажем подробно</span>
+          </div>
+        </div>
+
+        <div class="hero-side" data-reveal data-delay="2">
+          <img
+            class="hero-cassette"
+            src="05_Background/DEKI_cassettes.png"
+            alt=""
+            aria-hidden="true"
+          />
+          <div class="phone-decorations">
+            <div class="deco-tag t1">★ NEW DROP</div>
+            <div class="deco-tag t2">FLOW.MIX</div>
+            <div class="deco-tag t3">+48 plays</div>
+          </div>
+
+          <div class="phone" aria-hidden="true">
+            <div class="phone-screen phone-screen--img"
+              data-img-ru="05_Background/phone_screen.jpg"
+              data-img-en="05_Background/phone_screen_en.jpg"
+              style="background-image:url('05_Background/phone_screen.jpg');background-size:100% 100%;background-repeat:no-repeat;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span data-i18n="ticker-music">МУЗЫКА</span>
+        <span class="outline" data-i18n="ticker-video">ВИДЕО</span>
+        <span class="green" data-i18n="ticker-live">ЛАЙВЫ</span>
+        <span data-i18n="ticker-studio">СТУДИЯ</span>
+        <span class="outline" data-i18n="ticker-playlists">ПЛЕЙЛИСТЫ</span>
+        <span class="green" data-i18n="ticker-donates">ДОНАТЫ</span>
+        <span data-i18n="ticker-music">МУЗЫКА</span>
+        <span class="outline" data-i18n="ticker-video">ВИДЕО</span>
+        <span class="green" data-i18n="ticker-live">ЛАЙВЫ</span>
+        <span data-i18n="ticker-studio">СТУДИЯ</span>
+        <span class="outline" data-i18n="ticker-playlists">ПЛЕЙЛИСТЫ</span>
+        <span class="green" data-i18n="ticker-donates">ДОНАТЫ</span>
+      </div>
+    </div>
+
+    <section class="problem" id="problem">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <span class="section-num" data-i18n="problem-num">01 · ПРОБЛЕМА</span>
+          <h2 data-i18n-html="problem-h2">Telegram сегодня —<br />это <em>хаос</em> контента.</h2>
+          <p data-i18n="problem-p">
+            Музыка, клипы, лайвы разбросаны по сотням каналов. Чтобы быть в
+            теме, нужно держать у себя бесконечный список чатов, постоянно
+            переключаться и бояться что-то пропустить. Это не discovery — это
+            выживание.
+          </p>
+        </div>
+
+        <div class="stack">
+          <div class="cell" data-reveal>
+            <span class="num">/01</span>
+            <h3 data-i18n="problem-c1-h3">Сотни каналов и ни одной ленты</h3>
+            <p data-i18n="problem-c1-p">
+              Релизы тонут в сообщениях. Найти что-то новое сложнее, чем сделать
+              самому.
+            </p>
+            <span class="glyph">∞</span>
+          </div>
+          <div class="cell" data-reveal data-delay="1">
+            <span class="num">/02</span>
+            <h3 data-i18n="problem-c2-h3">Алгоритмы душат охваты</h3>
+            <p data-i18n="problem-c2-p">
+              На больших платформах артист — заложник алгоритмов и непрозрачных
+              рекомендаций. Аудитория принадлежит платформе, а не автору:
+              сегодня тебя пушат, завтра — хоронят в ленте. Прямой связи со
+              слушателем почти нет.
+            </p>
+            <span class="glyph">↘&#xFE0E;</span>
+          </div>
+          <div class="cell" data-reveal data-delay="2">
+            <span class="num">/03</span>
+            <h3 data-i18n="problem-c3-h3">Никакого UX для медиа</h3>
+            <p data-i18n="problem-c3-p">
+              Telegram отлично работает с текстом и стикерами, но плеер,
+              дискавери и плейлисты — это боль.
+            </p>
+            <span class="glyph">×</span>
+          </div>
+        </div>
+
+        <div class="verdict" data-reveal>
+          <div class="big" data-i18n-html="problem-verdict">
+            Артистам нужна свобода.<br />Слушателям — нормальный
+            <em>стриминг</em>.
+          </div>
+          <a class="btn" href="#solution" data-i18n="problem-verdict-btn">Как DEKI это решает →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="solution" id="solution">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <span class="section-num" data-i18n="solution-num">02 · РЕШЕНИЕ</span>
+          <h2 data-i18n-html="solution-h2">
+            Слой поверх <em>Telegram</em>,<br />превращающий хаос
+            в&nbsp;стриминг.
+          </h2>
+          <p data-i18n="solution-p">
+            DEKI читает приватные каналы артистов, собирает музыку и видео в
+            студию и предлагает готовый релиз. Артист подтверждает — и контент
+            появляется в едином медиа-фиде. Слушатели получают нормальный плеер.
+          </p>
+        </div>
+
+        <div class="split">
+          <ol class="steps">
+            <li data-reveal>
+              <span class="n">01</span>
+              <div>
+                <h4 data-i18n="solution-s1-h4">Артист загружает контент в свой канал — как обычно</h4>
+                <p data-i18n="solution-s1-p">
+                  Никаких новых привычек, никакого стресса. Те же mp3, mp4 —
+                  треки и клипы.
+                </p>
+              </div>
+            </li>
+            <li data-reveal data-delay="1">
+              <span class="n">02</span>
+              <div>
+                <h4 data-i18n="solution-s2-h4">Бот автоматически собирает музыку и видео</h4>
+                <p data-i18n="solution-s2-p">
+                  Файлы попадают в студию, DEKI предлагает структуру — артист
+                  распределяет по альбомам, синглам и клипам.
+                </p>
+              </div>
+            </li>
+            <li data-reveal data-delay="2">
+              <span class="n">03</span>
+              <div>
+                <h4 data-i18n="solution-s3-h4">Контент структурируется в удобный интерфейс</h4>
+                <p data-i18n="solution-s3-p">
+                  Профили, обложки, плейлисты, лайки и комментарии. Прямые эфиры
+                  идут прямо в приложении — не с канала.
+                </p>
+              </div>
+            </li>
+            <li data-reveal data-delay="3">
+              <span class="n">04</span>
+              <div>
+                <h4 data-i18n="solution-s4-h4">Слушатель видит всё новое в одном фиде</h4>
+                <p data-i18n="solution-s4-p">
+                  Не нужно прыгать между чатами. Открыл DEKI — увидел всё свежее
+                  и сразу включил.
+                </p>
+              </div>
+            </li>
+          </ol>
+
+          <div class="demo-mock" data-reveal data-delay="2" aria-hidden="true">
+            <div class="ring"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+            <div class="core">
+              <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <radialGradient id="cg" cx=".5" cy=".4" r=".7">
+                    <stop offset="0" stop-color="#52ff2c" />
+                    <stop offset="1" stop-color="#1cb800" />
+                  </radialGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="4" result="b" />
+                    <feMerge>
+                      <feMergeNode in="b" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="url(#cg)"
+                  filter="url(#glow)"
+                />
+                <circle cx="60" cy="60" r="26" fill="#0a0a0a" />
+                <rect
+                  x="56"
+                  y="20"
+                  width="8"
+                  height="22"
+                  fill="#0a0a0a"
+                  rx="2"
+                />
+                <rect
+                  x="56"
+                  y="78"
+                  width="8"
+                  height="22"
+                  fill="#0a0a0a"
+                  rx="2"
+                />
+                <rect
+                  x="20"
+                  y="56"
+                  width="22"
+                  height="8"
+                  fill="#0a0a0a"
+                  rx="2"
+                />
+                <rect
+                  x="78"
+                  y="56"
+                  width="22"
+                  height="8"
+                  fill="#0a0a0a"
+                  rx="2"
+                />
+              </svg>
+            </div>
+            <div class="float f1">
+              <span class="ic"
+                ><img src="04_Icons/icon_play_02.svg" alt=""
+              /></span>
+              <span data-i18n="float-f1">новый трек · @kip</span>
+            </div>
+            <div class="float f2">
+              <span class="ic"
+                ><img src="04_Icons/icon_feed_01.svg" alt=""
+              /></span>
+              <span data-i18n="float-f2">48 прослушиваний</span>
+            </div>
+            <div class="float f3">
+              <span class="ic"
+                ><img src="04_Icons/icon_library_02.svg" alt=""
+              /></span>
+              <span data-i18n="float-f3">синглы · 2</span>
+            </div>
+            <div class="float f4">
+              <span class="ic"
+                ><img src="04_Icons/icon_donate_01.svg" alt=""
+              /></span>
+              <span data-i18n="float-f4">донаты · скоро</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="audiences" id="audiences">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <span class="section-num" data-i18n="audiences-num">03 · ЦЕННОСТЬ</span>
+          <h2 data-i18n-html="audiences-h2">Один продукт —<br />две стороны истории.</h2>
+        </div>
+
+        <div class="grid">
+          <div class="aud left" data-reveal>
+            <h3 data-i18n-html="audiences-listener-h3">
+              <span class="for">Для слушателя</span>наконец-то<br />удобно
+            </h3>
+            <ul>
+              <li data-i18n="audiences-listener-li1">экономия времени — всё в одной ленте</li>
+              <li data-i18n="audiences-listener-li2">нормальный UX — плеер, плейлисты, дискавери</li>
+              <li data-i18n="audiences-listener-li3">ощущение, что у Telegram наконец-то появилась музыка</li>
+              <li data-i18n="audiences-listener-li4">прямые лайки, комменты и связь с артистами</li>
+            </ul>
+          </div>
+          <div class="aud right" data-reveal data-delay="1">
+            <h3 data-i18n-html="audiences-artist-h3">
+              <span class="for">Для артиста</span>дистрибуция<br />без
+              посредников
+            </h3>
+            <ul>
+              <li data-i18n="audiences-artist-li1">публикация в один клик — подтвердил и контент уже в фиде</li>
+              <li data-i18n="audiences-artist-li2">прямой контакт с аудиторией, без алгоритмов</li>
+              <li data-i18n="audiences-artist-li3">контроль над контентом и метаданными</li>
+              <li data-i18n-html="audiences-artist-li4">
+                студия аналитики из коробки +
+                <span class="soon">донаты — скоро</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="studio" id="studio">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <span class="section-num" data-i18n="studio-num">04 · СТУДИЯ АРТИСТА</span>
+          <h2 data-i18n-html="studio-h2">От загрузки до аудитории —<br />в <em>пару кликов</em>.</h2>
+          <p data-i18n="studio-p">
+            Артист подключает свой приватный канал в Telegram и добавляет DEKI
+            Music Bot как администратора — иначе бот не видит контент. После
+            этого просто загружай треки и видео как обычно: бот подхватывает их
+            автоматически и переносит в студию — дальше ты сам оформляешь релиз
+            и публикуешь его.
+          </p>
+        </div>
+
+        <div class="columns">
+          <div class="flow" data-reveal>
+            <div class="flow-step">
+              <div class="badge">01</div>
+              <div>
+                <h5 data-i18n="studio-s1-h5">Подключи свой канал</h5>
+                <p data-i18n="studio-s1-p">Добавляешь DEKI Music Bot админом — занимает 30 секунд.</p>
+              </div>
+            </div>
+            <div class="conn"></div>
+            <div class="flow-step">
+              <div class="badge">02</div>
+              <div>
+                <h5 data-i18n="studio-s2-h5">Загружай как обычно</h5>
+                <p data-i18n="studio-s2-p">
+                  Кидаешь треки и видео в свой канал. Никаких форм, никаких CMS.
+                </p>
+              </div>
+            </div>
+            <div class="conn"></div>
+            <div class="flow-step">
+              <div class="badge">03</div>
+              <div>
+                <h5 data-i18n="studio-s3-h5">Артист оформляет релиз</h5>
+                <p data-i18n="studio-s3-p">
+                  В студии ты сам прикрепляешь обложки, распределяешь треки и
+                  настраиваешь профиль — полный контроль.
+                </p>
+              </div>
+            </div>
+            <div class="conn"></div>
+            <div class="flow-step">
+              <div class="badge">04</div>
+              <div>
+                <h5 data-i18n="studio-s4-h5">Публикация в один клик</h5>
+                <p data-i18n="studio-s4-p">Жмёшь «Опубликовать» — и контент уже в общей ленте DEKI.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="screens" data-reveal data-delay="1" aria-hidden="true">
+            <div class="screen s3">
+              <img src="05_Background/analytics_screen.jpg"
+                data-img-ru="05_Background/analytics_screen.jpg"
+                data-img-en="05_Background/analytics_screen_en.jpg"
+                alt="Аналитика" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+            </div>
+
+            <div class="screen s4">
+              <img src="05_Background/studio_screen.jpg"
+                data-img-ru="05_Background/studio_screen.jpg"
+                data-img-en="05_Background/studio_screen_en.jpg"
+                alt="Студия" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="manifesto" id="manifesto">
+      <div class="wrap manifesto-inner">
+        <div data-reveal>
+          <span class="section-num" data-i18n="manifesto-num">05 · ВИДЕНИЕ</span>
+          <h2 style="margin-top: 18px" data-i18n-html="manifesto-h2">
+            DEKI — не<br /><span class="stroke">ещё одно</span
+            ><br />приложение.<br /><em>Это недостающий слой</em>,
+          </h2>
+          <p data-i18n-html="manifesto-p">
+            которого всегда не хватало Telegram. Музыкальная экосистема, где
+            звук снова становится живым:
+            <strong>просто, быстро и напрямую</strong> — от автора к слушателю,
+            без алгоритмов, лейблов и посредников.
+          </p>
+        </div>
+        <div class="why-card" data-reveal data-delay="1">
+          <h4 data-i18n="manifesto-why-h4">★ Почему именно сейчас</h4>
+          <div class="row">
+            <span class="l" data-i18n="manifesto-why-l1">/01 · platform</span>
+            <span class="v" data-i18n="manifesto-why-v1"
+              >Telegram стабильно растёт и стал основной площадкой для
+              инди-сцены и комьюнити.</span
+            >
+          </div>
+          <div class="row">
+            <span class="l" data-i18n="manifesto-why-l2">/02 · users</span>
+            <span class="v" data-i18n="manifesto-why-v2"
+              >Пользователи устали от тяжёлых стримингов с рекламой и
+              навязанными плейлистами.</span
+            >
+          </div>
+          <div class="row">
+            <span class="l" data-i18n="manifesto-why-l3">/03 · scene</span>
+            <span class="v" data-i18n="manifesto-why-v3"
+              >Независимая сцена ищет свободу — место, где артист и слушатель
+              встречаются напрямую.</span
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-final" id="cta">
+      <div class="wrap cta-box">
+        <img
+          class="cta-anim-logo"
+          src="01_Logotype/Logotype.png"
+          alt="DEKI"
+          data-reveal
+        />
+        <span class="section-num" data-reveal data-i18n="cta-num">★ ★ ★</span>
+        <h2 data-reveal data-delay="1" data-i18n-html="cta-h2">
+          Открой DEKI<br />и слушай <em>напрямую</em>.
+        </h2>
+        <p data-reveal data-delay="2" data-i18n="cta-p">
+          Telegram уже у тебя в кармане. Осталось добавить слой, превращающий
+          его в музыкальную платформу нового поколения.
+        </p>
+        <div class="cta-row center" data-reveal data-delay="3">
+          <a
+            class="btn"
+            href="https://t.me/Deki_music_bot?startapp"
+            target="_blank"
+            rel="noopener"
+            ><span data-i18n="cta-btn1">Запустить в Telegram</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 12h14m0 0l-6-6m6 6l-6 6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              /></svg
+          ></a>
+          <a
+            class="btn ghost"
+            href="https://t.me/Deki_music_bot?startapp"
+            target="_blank"
+            rel="noopener"
+            data-i18n="cta-btn2">Я артист → подключить канал</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-top">
+        <div class="word">DEKI<span class="acc">.</span></div>
+        <div class="footer-meta">
+          <span class="label" data-i18n="footer-label">МЕДИА-СЛОЙ В TELEGRAM</span>
+          <span class="status" data-i18n="footer-status">● онлайн · v 0.1 beta</span>
+        </div>
+      </div>
+
+      <div class="footer-cols">
+        <div class="fcol">
+          <h6 data-i18n="footer-col1-h6">Продукт</h6>
+          <a href="#problem" data-i18n="footer-col1-a1">Проблема</a>
+          <a href="#solution" data-i18n="footer-col1-a2">Решение</a>
+          <a href="#audiences" data-i18n="footer-col1-a3">Кому</a>
+          <a href="#studio" data-i18n="footer-col1-a4">Студия артиста</a>
+        </div>
+        <div class="fcol">
+          <h6 data-i18n="footer-col2-h6">Артистам</h6>
+          <a
+            href="https://t.me/Deki_music_bot?startapp"
+            target="_blank"
+            rel="noopener"
+            data-i18n="footer-col2-a1"
+            >Подключить канал</a
+          >
+          <a
+            href="https://t.me/Deki_music_bot?startapp"
+            target="_blank"
+            rel="noopener"
+            data-i18n="footer-col2-a2"
+            >DEKI Music Bot</a
+          >
+          <a href="#" data-i18n="footer-col2-a3">Гайд по релизу</a>
+          <a href="#" data-i18n="footer-col2-a4">Донаты и монетизация</a>
+        </div>
+        <div class="fcol">
+          <h6 data-i18n="footer-col3-h6">Сообщество</h6>
+          <a href="#" data-i18n="footer-col3-a1">Telegram-канал</a>
+          <a href="#" data-i18n="footer-col3-a2">Чат комьюнити</a>
+          <a href="#" data-i18n="footer-col3-a3">Подкаст DEKI</a>
+          <a href="#" data-i18n="footer-col3-a4">Контакт</a>
+        </div>
+        <div class="fcol">
+          <h6 data-i18n="footer-col4-h6">Контакты</h6>
+          <a href="mailto:hi@deki.app" data-i18n="footer-col4-a1">hi@deki.app</a>
+          <a href="#" data-i18n="footer-col4-a2">@deki</a>
+          <a href="#" data-i18n="footer-col4-a3">пресс-кит</a>
+          <a href="#" data-i18n="footer-col4-a4">для прессы</a>
+        </div>
+      </div>
+
+      <div class="legal">
+        <span data-i18n-html="footer-legal"
+          >© 2026 DEKI · все права
+          <span style="color: var(--green)">слушателей</span> и артистов
+          защищены</span
+        >
+        <span id="time">--:--:--</span>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
