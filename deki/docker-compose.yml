@@ -3,8 +3,7 @@ services:
     image: caddy:alpine
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - "3333:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - .:/srv
