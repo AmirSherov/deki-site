@@ -33,7 +33,7 @@ const translations = {
     'nav-community': 'Сообщество',
 
     'hero-tag-for': 'для&nbsp;Telegram',
-    'hero-headline': 'Самый <em>короткий</em> путь<br />от <span class="stroke">артиста</span><br />к слушателю.',
+    'hero-headline': 'Deki Music — самый <em>короткий</em> путь<br />от <span class="stroke">артиста</span><br />к слушателю.',
     'hero-lede': 'DEKI — это <strong>медиа-слой поверх Telegram</strong>. Артисты загружают треки и клипы как обычно, в свой канал. DEKI собирает всё в единый стриминг — без посредников, без алгоритмов, без лишних движений.',
     'hero-cta1': 'Попробовать DEKI',
     'hero-cta2': 'Как это работает',
@@ -154,7 +154,7 @@ const translations = {
     'nav-community': 'Community',
 
     'hero-tag-for': 'for&nbsp;Telegram',
-    'hero-headline': 'The <em>shortest</em> path<br />from <span class="stroke">artist</span><br />to listener.',
+    'hero-headline': 'Deki Music — the <em>shortest</em> path<br />from <span class="stroke">artist</span><br />to listener.',
     'hero-lede': 'DEKI is a <strong>media layer on top of Telegram</strong>. Artists upload tracks and clips as usual, to their channel. DEKI aggregates everything into a unified stream — no middlemen, no algorithms, no extra steps.',
     'hero-cta1': 'Try DEKI',
     'hero-cta2': 'How it works',
