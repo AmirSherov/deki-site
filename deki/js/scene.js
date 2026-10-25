@@ -39,6 +39,7 @@ function start() {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.0;
+  renderer.autoClear = false;   // the aurora pass and the main scene share one frame
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
@@ -58,6 +59,69 @@ function start() {
   const under = new THREE.PointLight(0x5aff1f, 18, 20, 1.8);
   under.position.set(-3, -4, 3);
   scene.add(under);
+
+  /* ── aurora background: domain-warped noise in the brand violet/green, lit by the mouse ── */
+  const bgScene = new THREE.Scene();
+  const bgCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const bgMat = new THREE.ShaderMaterial({
+    depthTest: false, depthWrite: false, transparent: true,
+    uniforms: { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2(0, 0) }, uRes: { value: new THREE.Vector2(1, 1) }, uScroll: { value: 0 }, uFade: { value: 0 }, uOct: { value: lite ? 2 : 4 } },
+    vertexShader: /* glsl */ `void main(){ gl_Position = vec4(position, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      precision highp float;
+      uniform float uTime, uScroll, uFade; uniform vec2 uMouse, uRes; uniform int uOct;
+      vec3 hash3(vec3 p){ p = fract(p * vec3(443.897, 441.423, 437.195)); p += dot(p, p.yxz + 19.19); return fract((p.xxy + p.yxx) * p.zyx); }
+      float noise(vec3 p){
+        vec3 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+        float n = 0.0;
+        for (int z=0; z<2; z++) for (int y=0; y<2; y++) for (int x=0; x<2; x++) {
+          vec3 o = vec3(x,y,z);
+          vec3 w = mix(1.0-f, f, o);
+          n += hash3(i+o).x * w.x * w.y * w.z;
+        }
+        return n;
+      }
+      float fbm(vec3 p){ float a = 0.5, s = 0.0; for (int i=0;i<4;i++){ if (i>=uOct) break; s += a*noise(p); p = p*2.03 + 11.3; a *= 0.5; } return s; }
+      void main(){
+        vec2 uv = gl_FragCoord.xy / uRes;
+        vec2 p = (uv - 0.5) * vec2(uRes.x/uRes.y, 1.0);
+        float t = uTime * 0.075;
+        // bigger, slower shapes that fill the whole screen
+        vec3 q = vec3(p * 0.78, t + uScroll * 0.35);
+        float w1 = fbm(q + vec3(fbm(q*1.3 + 3.1), fbm(q*1.1 - 2.4), 0.0) * 1.15);
+        float w2 = fbm(q*1.6 - vec3(w1, w1*0.7, 0.3) * 1.2);
+        float w3 = fbm(q*0.6 + vec3(w2*0.8, -w1, 1.7));
+        vec3 deep   = vec3(0.16, 0.0, 0.42);
+        vec3 violet = vec3(0.537, 0.102, 1.0);
+        vec3 lilac  = vec3(0.69, 0.40, 1.0);
+        vec3 magenta= vec3(0.78, 0.10, 1.0);
+        vec3 green  = vec3(0.345, 1.0, 0.0);
+        vec3 col = mix(deep, violet, smoothstep(0.18, 0.7, w1));
+        col = mix(col, magenta, smoothstep(0.45, 0.7, w3) * 0.5);
+        col = mix(col, lilac, smoothstep(0.55, 0.8, w1) * 0.75);
+        col = mix(col, green, smoothstep(0.47, 0.7, w2) * 0.8);
+        // inner glow on the densest folds
+        col += lilac * pow(smoothstep(0.4, 0.85, w1), 3.0) * 1.1;
+        col += green * pow(smoothstep(0.45, 0.8, w2), 3.0) * 0.8;
+        // mouse light
+        vec2 m = uMouse * vec2(uRes.x/uRes.y, 1.0) * 0.5;
+        float d = length(p - m);
+        col += mix(violet, lilac, 0.5) * exp(-d*d*4.0) * 0.5;
+        // bright ridges, like northern lights: two layers at different scales
+        float r1 = 1.0 - smoothstep(0.0, 0.06, abs(fract(w1*3.0 + t) - 0.5) - 0.44);
+        float r2 = 1.0 - smoothstep(0.0, 0.05, abs(fract(w2*4.0 - t*1.3) - 0.5) - 0.45);
+        col += lilac * r1 * 0.35 * smoothstep(0.25, 0.65, w1);
+        col += green * r2 * 0.3 * smoothstep(0.4, 0.65, w2);
+        // push saturation
+        float l = dot(col, vec3(0.299, 0.587, 0.114));
+        col = max(mix(vec3(l), col, 1.35), 0.0);
+        // soft vignette: the aurora reaches the edges now
+        float vig = smoothstep(2.0, 0.1, length(p * vec2(0.85, 1.0)));
+        float a = clamp((0.2 + 0.95 * smoothstep(0.3, 0.72, w1) + 0.4 * smoothstep(0.45, 0.7, w2)) * vig, 0.0, 1.0) * uFade;
+        gl_FragColor = vec4(col * a * 1.35, a);
+      }`,
+  });
+  bgScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat));
 
   /* ── particles ── */
   const COUNT = lite ? 420 : 1600;
@@ -213,6 +277,7 @@ function start() {
     camera.updateProjectionMatrix();
     worldH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * CAM_Z;
     worldW = worldH * camera.aspect;
+    bgMat.uniforms.uRes.value.set(vw * renderer.getPixelRatio(), vh * renderer.getPixelRatio());
   }
   resize();
   addEventListener('resize', () => { resize(); measureSlots(); });
@@ -275,7 +340,8 @@ function start() {
       renderer.setPixelRatio(dprFor(q));
       renderer.setSize(vw, vh, true);
       pMat.uniforms.uPx.value = renderer.getPixelRatio();
-      if (q >= 2) pGeo.setDrawRange(0, Math.floor(COUNT * 0.6));
+      bgMat.uniforms.uRes.value.set(vw * renderer.getPixelRatio(), vh * renderer.getPixelRatio());
+      if (q >= 2) { pGeo.setDrawRange(0, Math.floor(COUNT * 0.6)); bgMat.uniforms.uOct.value = 2; }
     }
   }
 
@@ -291,6 +357,12 @@ function start() {
 
     m.x += ((D.mouse ? D.mouse.x : 0) - m.x) * 0.05;
     m.y += ((D.mouse ? D.mouse.y : 0) - m.y) * 0.05;
+
+    // aurora fades in with the intro
+    bgMat.uniforms.uTime.value = t;
+    bgMat.uniforms.uScroll.value = scrollY / Math.max(innerHeight, 1);
+    bgMat.uniforms.uMouse.value.set(m.x, -m.y);
+    bgMat.uniforms.uFade.value += (intro - bgMat.uniforms.uFade.value) * 0.03;
 
     pMat.uniforms.uTime.value = t;
     pMat.uniforms.uScroll.value = scrollY * 0.0025;
@@ -339,6 +411,8 @@ function start() {
 
     // with only the particle dust on screen, phones can draw at half rate
     if (lite && !onScreen && (frameN & 1)) return;
+    renderer.clear();
+    renderer.render(bgScene, bgCam);
     renderer.render(scene, camera);
   }
   requestAnimationFrame(frame);
