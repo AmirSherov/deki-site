@@ -3,3 +3,5 @@ docker-compose.yml
 Caddyfile
 .dockerignore
 .git
+3d
+05_Background/source

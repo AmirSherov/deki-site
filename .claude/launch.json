@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "deki-site", "runtimeExecutable": "python", "runtimeArgs": ["-m", "http.server", "5178", "-d", "deki"], "port": 5178 }
+  ]
+}

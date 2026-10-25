@@ -1,298 +1,489 @@
-const io = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
-}, { threshold: .12 });
-document.querySelectorAll('[data-reveal]').forEach(el => io.observe(el));
+/* DEKI — page motion: smooth scroll, loader, split text, scroll scenes. */
+(() => {
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  // phones/tablets: native momentum scroll, weaker GPU → lighter effects, no scrub lag
+  const lite = !fine || innerWidth < 760;
+  if (lite) root.classList.add('lite');
+  const S = (v) => (lite ? 0.12 : v);   // scrub smoothing: instant on touch, buttery on desktop
+  const hasGsap = !!window.gsap && !!window.ScrollTrigger;
+  const $ = (s, c = document) => c.querySelector(s);
+  const $$ = (s, c = document) => [...c.querySelectorAll(s)];
 
-const tEl = document.getElementById('time');
-function tick() {
-  const d = new Date();
-  const p = n => String(n).padStart(2, '0');
-  tEl.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} · MSK`;
-}
-tick();
-setInterval(tick, 1000);
+  window.DEKI = window.DEKI || {};
+  const D = window.DEKI;
+  D.mouse = { x: 0, y: 0 };      // -1..1, eased in scene
+  D.velocity = 0;                 // px per frame-ish
+  D.lite = lite;
 
-const blobs = document.querySelectorAll('.hero .blob');
-window.addEventListener('mousemove', (e) => {
-  const x = (e.clientX / window.innerWidth - .5) * 30;
-  const y = (e.clientY / window.innerHeight - .5) * 30;
-  blobs.forEach((b, i) => {
-    b.style.transform = `translate(${x * (i ? -1 : 1)}px, ${y * (i ? -1 : 1)}px)`;
-  });
-}, { passive: true });
+  if (reduce || !hasGsap) root.classList.add('rm');
 
-/* ── i18n ── */
-const translations = {
-  ru: {
-    'nav-problem': 'Проблема',
-    'nav-solution': 'Решение',
-    'nav-audiences': 'Кому',
-    'nav-studio': 'Студия',
-    'nav-manifesto': 'Видение',
-    'nav-open-tg': 'Открыть в Telegram',
-    'nav-community': 'Сообщество',
-
-    'hero-tag-for': 'для&nbsp;Telegram',
-    'hero-headline': 'Deki Music — самый <em>короткий</em> путь<br />от <span class="stroke">артиста</span><br />к слушателю.',
-    'hero-lede': 'DEKI — это <strong>медиа-слой поверх Telegram</strong>. Артисты загружают треки и клипы как обычно, в свой канал. DEKI собирает всё в единый стриминг — без посредников, без алгоритмов, без лишних движений.',
-    'hero-cta1': 'Попробовать DEKI',
-    'hero-cta2': 'Как это работает',
-    'hero-platform-android': '✓ Android',
-    'hero-platform-pc': '✓ ПК · Telegram Web',
-    'hero-platform-ios': '✕ iOS — скоро?',
-    'hero-scroll': 'прокрутите вниз — расскажем подробно',
-
-    'ticker-music': 'МУЗЫКА',
-    'ticker-video': 'ВИДЕО',
-    'ticker-live': 'ЛАЙВЫ',
-    'ticker-studio': 'СТУДИЯ',
-    'ticker-playlists': 'ПЛЕЙЛИСТЫ',
-    'ticker-donates': 'ДОНАТЫ',
-
-    'float-f1': 'новый трек · @kip',
-    'float-f2': '48 прослушиваний',
-    'float-f3': 'синглы · 2',
-    'float-f4': 'донаты · скоро',
-
-    'problem-num': '01 · ПРОБЛЕМА',
-    'problem-h2': 'Telegram сегодня —<br />это <em>хаос</em> контента.',
-    'problem-p': 'Музыка, клипы, лайвы разбросаны по сотням каналов. Чтобы быть в теме, нужно держать у себя бесконечный список чатов, постоянно переключаться и бояться что-то пропустить. Это не discovery — это выживание.',
-    'problem-c1-h3': 'Сотни каналов и ни одной ленты',
-    'problem-c1-p': 'Релизы тонут в сообщениях. Найти что-то новое сложнее, чем сделать самому.',
-    'problem-c2-h3': 'Алгоритмы душат охваты',
-    'problem-c2-p': 'На больших платформах артист — заложник алгоритмов и непрозрачных рекомендаций. Аудитория принадлежит платформе, а не автору: сегодня тебя пушат, завтра — хоронят в ленте. Прямой связи со слушателем почти нет.',
-    'problem-c3-h3': 'Никакого UX для медиа',
-    'problem-c3-p': 'Telegram отлично работает с текстом и стикерами, но плеер, дискавери и плейлисты — это боль.',
-    'problem-verdict': 'Артистам нужна свобода.<br />Слушателям — нормальный <em>стриминг</em>.',
-    'problem-verdict-btn': 'Как DEKI это решает →',
-
-    'solution-num': '02 · РЕШЕНИЕ',
-    'solution-h2': 'Слой поверх <em>Telegram</em>,<br />превращающий хаос в&nbsp;стриминг.',
-    'solution-p': 'DEKI читает приватные каналы артистов, собирает музыку и видео в студию и предлагает готовый релиз. Артист подтверждает — и контент появляется в едином медиа-фиде. Слушатели получают нормальный плеер.',
-    'solution-s1-h4': 'Артист загружает контент в свой канал — как обычно',
-    'solution-s1-p': 'Никаких новых привычек, никакого стресса. Те же mp3, mp4 — треки и клипы.',
-    'solution-s2-h4': 'Бот автоматически собирает музыку и видео',
-    'solution-s2-p': 'Файлы попадают в студию, DEKI предлагает структуру — артист распределяет по альбомам, синглам и клипам.',
-    'solution-s3-h4': 'Контент структурируется в удобный интерфейс',
-    'solution-s3-p': 'Профили, обложки, плейлисты, лайки и комментарии. Прямые эфиры идут прямо в приложении — не с канала.',
-    'solution-s4-h4': 'Слушатель видит всё новое в одном фиде',
-    'solution-s4-p': 'Не нужно прыгать между чатами. Открыл DEKI — увидел всё свежее и сразу включил.',
-
-    'audiences-num': '03 · ЦЕННОСТЬ',
-    'audiences-h2': 'Один продукт —<br />две стороны истории.',
-    'audiences-listener-h3': '<span class="for">Для слушателя</span>наконец-то<br />удобно',
-    'audiences-listener-li1': 'экономия времени — всё в одной ленте',
-    'audiences-listener-li2': 'нормальный UX — плеер, плейлисты, дискавери',
-    'audiences-listener-li3': 'ощущение, что у Telegram наконец-то появилась музыка',
-    'audiences-listener-li4': 'прямые лайки, комменты и связь с артистами',
-    'audiences-artist-h3': '<span class="for">Для артиста</span>дистрибуция<br />без посредников',
-    'audiences-artist-li1': 'публикация в один клик — подтвердил и контент уже в фиде',
-    'audiences-artist-li2': 'прямой контакт с аудиторией, без алгоритмов',
-    'audiences-artist-li3': 'контроль над контентом и метаданными',
-    'audiences-artist-li4': 'студия аналитики из коробки + <span class="soon">донаты — скоро</span>',
-
-    'studio-num': '04 · СТУДИЯ АРТИСТА',
-    'studio-h2': 'От загрузки до аудитории —<br />в <em>пару кликов</em>.',
-    'studio-p': 'Артист подключает свой приватный канал в Telegram и добавляет DEKI Music Bot как администратора — иначе бот не видит контент. После этого просто загружай треки и видео как обычно: бот подхватывает их автоматически и переносит в студию — дальше ты сам оформляешь релиз и публикуешь его.',
-    'studio-s1-h5': 'Подключи свой канал',
-    'studio-s1-p': 'Добавляешь DEKI Music Bot админом — занимает 30 секунд.',
-    'studio-s2-h5': 'Загружай как обычно',
-    'studio-s2-p': 'Кидаешь треки и видео в свой канал. Никаких форм, никаких CMS.',
-    'studio-s3-h5': 'Артист оформляет релиз',
-    'studio-s3-p': 'В студии ты сам прикрепляешь обложки, распределяешь треки и настраиваешь профиль — полный контроль.',
-    'studio-s4-h5': 'Публикация в один клик',
-    'studio-s4-p': 'Жмёшь «Опубликовать» — и контент уже в общей ленте DEKI.',
-
-    'manifesto-num': '05 · ВИДЕНИЕ',
-    'manifesto-h2': 'DEKI — не<br /><span class="stroke">ещё одно</span><br />приложение.<br /><em>Это недостающий слой</em>,',
-    'manifesto-p': 'которого всегда не хватало Telegram. Музыкальная экосистема, где звук снова становится живым: <strong>просто, быстро и напрямую</strong> — от автора к слушателю, без алгоритмов, лейблов и посредников.',
-    'manifesto-why-h4': '★ Почему именно сейчас',
-    'manifesto-why-l1': '/01 · platform',
-    'manifesto-why-v1': 'Telegram стабильно растёт и стал основной площадкой для инди-сцены и комьюнити.',
-    'manifesto-why-l2': '/02 · users',
-    'manifesto-why-v2': 'Пользователи устали от тяжёлых стримингов с рекламой и навязанными плейлистами.',
-    'manifesto-why-l3': '/03 · scene',
-    'manifesto-why-v3': 'Независимая сцена ищет свободу — место, где артист и слушатель встречаются напрямую.',
-
-    'cta-num': '★ ★ ★',
-    'cta-h2': 'Открой DEKI<br />и слушай <em>напрямую</em>.',
-    'cta-p': 'Telegram уже у тебя в кармане. Осталось добавить слой, превращающий его в музыкальную платформу нового поколения.',
-    'cta-btn1': 'Запустить в Telegram',
-    'cta-btn2': 'Я артист → подключить канал',
-
-    'footer-label': 'МЕДИА-СЛОЙ В TELEGRAM',
-    'footer-status': '● онлайн · v 0.1 beta',
-    'footer-col1-h6': 'Продукт',
-    'footer-col1-a1': 'Проблема',
-    'footer-col1-a2': 'Решение',
-    'footer-col1-a3': 'Кому',
-    'footer-col1-a4': 'Студия артиста',
-    'footer-col2-h6': 'Артистам',
-    'footer-col2-a1': 'Подключить канал',
-    'footer-col2-a2': 'DEKI Music Bot',
-    'footer-col2-a3': 'Гайд по релизу',
-    'footer-col2-a4': 'Донаты и монетизация',
-    'footer-col3-h6': 'Сообщество',
-    'footer-col3-a1': 'Telegram-канал',
-    'footer-col3-a2': 'Чат комьюнити',
-    'footer-col3-a3': 'Подкаст DEKI',
-    'footer-col3-a4': 'Контакт',
-    'footer-col4-h6': 'Контакты',
-    'footer-col4-a1': 'hi@deki.app',
-    'footer-col4-a2': '@deki',
-    'footer-col4-a3': 'пресс-кит',
-    'footer-col4-a4': 'для прессы',
-    'footer-legal': '© 2026 DEKI · все права <span style="color: var(--green)">слушателей</span> и артистов защищены',
-  },
-  en: {
-    'nav-problem': 'Problem',
-    'nav-solution': 'Solution',
-    'nav-audiences': 'For Whom',
-    'nav-studio': 'Studio',
-    'nav-manifesto': 'Vision',
-    'nav-open-tg': 'Open in Telegram',
-    'nav-community': 'Community',
-
-    'hero-tag-for': 'for&nbsp;Telegram',
-    'hero-headline': 'Deki Music — the <em>shortest</em> path<br />from <span class="stroke">artist</span><br />to listener.',
-    'hero-lede': 'DEKI is a <strong>media layer on top of Telegram</strong>. Artists upload tracks and clips as usual, to their channel. DEKI aggregates everything into a unified stream — no middlemen, no algorithms, no extra steps.',
-    'hero-cta1': 'Try DEKI',
-    'hero-cta2': 'How it works',
-    'hero-platform-android': '✓ Android',
-    'hero-platform-pc': '✓ PC · Telegram Web',
-    'hero-platform-ios': '✕ iOS — coming soon?',
-    'hero-scroll': 'scroll down — we\'ll tell you more',
-
-    'ticker-music': 'MUSIC',
-    'ticker-video': 'VIDEO',
-    'ticker-live': 'LIVES',
-    'ticker-studio': 'STUDIO',
-    'ticker-playlists': 'PLAYLISTS',
-    'ticker-donates': 'DONATIONS',
-
-    'float-f1': 'new track · @kip',
-    'float-f2': '48 plays',
-    'float-f3': 'singles · 2',
-    'float-f4': 'donations · soon',
-
-    'problem-num': '01 · PROBLEM',
-    'problem-h2': 'Telegram today —<br />is a <em>chaos</em> of content.',
-    'problem-p': 'Music, clips, lives are scattered across hundreds of channels. To stay in the loop, you need an endless list of chats, constantly switching and fearing to miss something. This is not discovery — this is survival.',
-    'problem-c1-h3': 'Hundreds of channels and no feed',
-    'problem-c1-p': 'Releases drown in messages. Finding something new is harder than making it yourself.',
-    'problem-c2-h3': 'Algorithms throttle reach',
-    'problem-c2-p': 'On big platforms the artist is a hostage to algorithms and opaque recommendations. The audience belongs to the platform, not the creator: today they push you, tomorrow — bury you in the feed. Direct connection with listeners is almost gone.',
-    'problem-c3-h3': 'No UX for media',
-    'problem-c3-p': 'Telegram works great with text and stickers, but the player, discovery and playlists — are painful.',
-    'problem-verdict': 'Artists need freedom.<br />Listeners need proper <em>streaming</em>.',
-    'problem-verdict-btn': 'How DEKI solves this →',
-
-    'solution-num': '02 · SOLUTION',
-    'solution-h2': 'A layer on top of <em>Telegram</em>,<br />turning chaos into&nbsp;streaming.',
-    'solution-p': 'DEKI reads artists\' private channels, collects music and video into a studio and offers a ready release. The artist confirms — and content appears in a unified media feed. Listeners get a proper player.',
-    'solution-s1-h4': 'Artist uploads content to their channel — as usual',
-    'solution-s1-p': 'No new habits, no stress. Same mp3, mp4 — tracks and clips.',
-    'solution-s2-h4': 'Bot automatically collects music and video',
-    'solution-s2-p': 'Files land in the studio, DEKI suggests structure — artist distributes by albums, singles and clips.',
-    'solution-s3-h4': 'Content is structured into a convenient interface',
-    'solution-s3-p': 'Profiles, covers, playlists, likes and comments. Livestreams go directly in the app — not from a channel.',
-    'solution-s4-h4': 'Listener sees all new content in one feed',
-    'solution-s4-p': 'No need to jump between chats. Open DEKI — see everything fresh and play immediately.',
-
-    'audiences-num': '03 · VALUE',
-    'audiences-h2': 'One product —<br />two sides of the story.',
-    'audiences-listener-h3': '<span class="for">For listener</span>finally<br />convenient',
-    'audiences-listener-li1': 'time saving — everything in one feed',
-    'audiences-listener-li2': 'proper UX — player, playlists, discovery',
-    'audiences-listener-li3': 'feeling that Telegram finally has music',
-    'audiences-listener-li4': 'direct likes, comments and connection with artists',
-    'audiences-artist-h3': '<span class="for">For artist</span>distribution<br />without middlemen',
-    'audiences-artist-li1': 'one-click publishing — confirmed and content is in the feed',
-    'audiences-artist-li2': 'direct contact with audience, no algorithms',
-    'audiences-artist-li3': 'control over content and metadata',
-    'audiences-artist-li4': 'analytics studio out of the box + <span class="soon">donations — coming soon</span>',
-
-    'studio-num': '04 · ARTIST STUDIO',
-    'studio-h2': 'From upload to audience —<br />in <em>a few clicks</em>.',
-    'studio-p': 'The artist connects their private Telegram channel and adds DEKI Music Bot as an admin — otherwise the bot can\'t see the content. After that just upload tracks and video as usual: the bot picks them up automatically and moves them to the studio — then you set up the release and publish it yourself.',
-    'studio-s1-h5': 'Connect your channel',
-    'studio-s1-p': 'Add DEKI Music Bot as admin — takes 30 seconds.',
-    'studio-s2-h5': 'Upload as usual',
-    'studio-s2-p': 'Drop tracks and video into your channel. No forms, no CMS.',
-    'studio-s3-h5': 'Artist sets up the release',
-    'studio-s3-p': 'In the studio you attach covers, arrange tracks and set up your profile — full control.',
-    'studio-s4-h5': 'Publish in one click',
-    'studio-s4-p': 'Hit "Publish" — and content is already in the DEKI feed.',
-
-    'manifesto-num': '05 · VISION',
-    'manifesto-h2': 'DEKI is not<br /><span class="stroke">just another</span><br />app.<br /><em>It\'s the missing layer</em>,',
-    'manifesto-p': 'that Telegram always lacked. A music ecosystem where sound comes alive again: <strong>simple, fast and direct</strong> — from creator to listener, without algorithms, labels and middlemen.',
-    'manifesto-why-h4': '★ Why right now',
-    'manifesto-why-l1': '/01 · platform',
-    'manifesto-why-v1': 'Telegram is steadily growing and has become the primary platform for the indie scene and communities.',
-    'manifesto-why-l2': '/02 · users',
-    'manifesto-why-v2': 'Users are tired of heavy streaming services with ads and imposed playlists.',
-    'manifesto-why-l3': '/03 · scene',
-    'manifesto-why-v3': 'The independent scene seeks freedom — a place where artist and listener meet directly.',
-
-    'cta-num': '★ ★ ★',
-    'cta-h2': 'Open DEKI<br />and listen <em>directly</em>.',
-    'cta-p': 'Telegram is already in your pocket. All that\'s left is to add the layer that turns it into a next-generation music platform.',
-    'cta-btn1': 'Launch in Telegram',
-    'cta-btn2': 'I\'m an artist → connect channel',
-
-    'footer-label': 'MEDIA LAYER IN TELEGRAM',
-    'footer-status': '● online · v 0.1 beta',
-    'footer-col1-h6': 'Product',
-    'footer-col1-a1': 'Problem',
-    'footer-col1-a2': 'Solution',
-    'footer-col1-a3': 'For Whom',
-    'footer-col1-a4': 'Artist Studio',
-    'footer-col2-h6': 'For Artists',
-    'footer-col2-a1': 'Connect channel',
-    'footer-col2-a2': 'DEKI Music Bot',
-    'footer-col2-a3': 'Release guide',
-    'footer-col2-a4': 'Donations and monetization',
-    'footer-col3-h6': 'Community',
-    'footer-col3-a1': 'Telegram channel',
-    'footer-col3-a2': 'Community chat',
-    'footer-col3-a3': 'DEKI Podcast',
-    'footer-col3-a4': 'Contact',
-    'footer-col4-h6': 'Contacts',
-    'footer-col4-a1': 'hi@deki.app',
-    'footer-col4-a2': '@deki',
-    'footer-col4-a3': 'press kit',
-    'footer-col4-a4': 'for press',
-    'footer-legal': '© 2026 DEKI · all rights of <span style="color: var(--green)">listeners</span> and artists reserved',
+  /* ── smooth scroll ─────────────────────────────────────────────── */
+  let lenis = null;
+  if (hasGsap) {
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
   }
-};
+  if (hasGsap && !reduce && window.Lenis) {
+    lenis = new Lenis({ lerp: 0.09, smoothWheel: true, wheelMultiplier: 1, touchMultiplier: 1.4 });
+    lenis.stop();
+    lenis.on('scroll', (e) => { D.velocity = e.velocity; ScrollTrigger.update(); });
+    gsap.ticker.add((t) => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+    D.lenis = lenis;
+  } else {
+    let last = scrollY;
+    const track = () => { D.velocity = scrollY - last; last = scrollY; requestAnimationFrame(track); };
+    track();
+  }
 
-let currentLang = 'ru';
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute('href');
+    const target = id === '#' ? null : $(id);
+    if (id === '#' ) { e.preventDefault(); return; }
+    if (!target) return;
+    e.preventDefault();
+    closeMenu();
+    if (lenis) lenis.scrollTo(target, { offset: id === '#hero' ? -200 : 0, duration: 1.6 });
+    else target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+  });
 
-function applyLang(lang) {
-  const t = translations[lang];
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (t[key] !== undefined) el.textContent = t[key];
-  });
-  document.querySelectorAll('[data-i18n-html]').forEach(el => {
-    const key = el.dataset.i18nHtml;
-    if (t[key] !== undefined) el.innerHTML = t[key];
-  });
-  document.querySelectorAll('[data-img-ru]').forEach(el => {
-    const src = lang === 'ru' ? el.dataset.imgRu : el.dataset.imgEn;
-    if (el.tagName === 'IMG') {
-      el.src = src;
-    } else {
-      el.style.backgroundImage = `url('${src}')`;
-    }
-  });
-  document.documentElement.lang = lang;
-  currentLang = lang;
-  const btn = document.getElementById('lang-toggle');
-  if (btn) btn.textContent = lang === 'ru' ? 'EN' : 'RU';
-}
+  addEventListener('pointermove', (e) => {
+    D.mouse.x = (e.clientX / innerWidth) * 2 - 1;
+    D.mouse.y = (e.clientY / innerHeight) * 2 - 1;
+  }, { passive: true });
 
-document.getElementById('lang-toggle').addEventListener('click', () => {
-  applyLang(currentLang === 'ru' ? 'en' : 'ru');
-});
+  /* ── split text ────────────────────────────────────────────────── */
+  function wrapWords(el, cls) {
+    const walk = (node) => {
+      [...node.childNodes].forEach((n) => {
+        if (n.nodeType === 3) {
+          const parts = n.textContent.split(/(\s+)/);
+          if (parts.length === 1 && !parts[0]) return;
+          const frag = document.createDocumentFragment();
+          parts.forEach((p) => {
+            if (!p) return;
+            if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(' ')); return; }
+            if (cls === 'w') {
+              const w = document.createElement('span'); w.className = 'w';
+              const i = document.createElement('span'); i.className = 'wi'; i.textContent = p;
+              w.appendChild(i); frag.appendChild(w);
+            } else {
+              const s = document.createElement('span'); s.className = 'ws'; s.textContent = p;
+              frag.appendChild(s);
+            }
+          });
+          n.replaceWith(frag);
+        } else if (n.nodeType === 1 && n.tagName !== 'BR') {
+          walk(n);
+        }
+      });
+    };
+    walk(el);
+    return cls === 'w' ? $$('.wi', el) : $$('.ws', el);
+  }
+
+  const splitEls = $$('[data-split]');
+  const wordEls = $$('[data-words]');
+  splitEls.forEach((el) => wrapWords(el, 'w'));
+  wordEls.forEach((el) => wrapWords(el, 'ws'));
+
+  /* ── clock ─────────────────────────────────────────────────────── */
+  const tEl = $('#time');
+  const tick = () => {
+    const d = new Date(); const p = (n) => String(n).padStart(2, '0');
+    tEl.textContent = `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())} · MSK`;
+  };
+  tick(); setInterval(tick, 1000);
+
+  /* ── menu ──────────────────────────────────────────────────────── */
+  const burger = $('#burger'), menu = $('#menu');
+  function closeMenu() {
+    if (!menu.classList.contains('is-open')) return;
+    menu.classList.remove('is-open'); menu.setAttribute('aria-hidden', 'true');
+    burger.setAttribute('aria-expanded', 'false'); lenis && lenis.start();
+  }
+  burger.addEventListener('click', () => {
+    const open = !menu.classList.contains('is-open');
+    menu.classList.toggle('is-open', open); menu.setAttribute('aria-hidden', String(!open));
+    burger.setAttribute('aria-expanded', String(open));
+    if (lenis) open ? lenis.stop() : lenis.start();
+  });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+
+  /* ── nav state ─────────────────────────────────────────────────── */
+  const nav = $('#nav');
+  let lastY = 0;
+  const onScrollNav = () => {
+    const y = scrollY;
+    nav.classList.toggle('is-scrolled', y > 24);
+    if (!menu.classList.contains('is-open')) nav.classList.toggle('is-hidden', y > 480 && y > lastY + 2);
+    if (y < lastY - 2 || y < 480) nav.classList.remove('is-hidden');
+    lastY = y;
+  };
+  addEventListener('scroll', onScrollNav, { passive: true });
+
+  /* ── loader ────────────────────────────────────────────────────── */
+  const num = $('#loader-num'), bar = $('.loader-bar');
+  let shown = 0, target = 0, sceneReady = false;
+  const t0 = performance.now();
+  addEventListener('deki:progress', (e) => { target = Math.max(target, e.detail * 100); });
+  addEventListener('deki:scene-ready', () => { sceneReady = true; target = 100; });
+  setTimeout(() => { sceneReady = true; target = 100; }, 4500); // never hold the page hostage
+  setTimeout(() => finishLoading(), 6000);                         // even if rAF is throttled
+  let tPrev = t0;
+  const loadLoop = (now = performance.now()) => {
+    const dt = Math.min((now - tPrev) / 1000, 0.25); tPrev = now;
+    const minTime = now - t0 > 900;
+    const cap = sceneReady && minTime ? 100 : Math.min(target, 92);
+    shown += Math.max((cap - shown) * (1 - Math.exp(-dt * 7)), dt * 25);
+    shown = Math.min(shown, cap);
+    num.textContent = Math.round(shown);
+    bar.style.setProperty('--p', shown / 100);
+    if (loaded) return;
+    if (shown >= 99.5 && sceneReady && minTime) return finishLoading();
+    requestAnimationFrame(loadLoop);
+  };
+  if (reduce) { sceneReady = true; }
+  requestAnimationFrame(loadLoop);
+
+  let loaded = false;
+  function finishLoading() {
+    if (loaded) return;
+    loaded = true;
+    num.textContent = 100;
+    root.classList.add('is-ready');
+    root.classList.remove('is-loading');
+    setTimeout(() => $('.loader') && $('.loader').remove(), 800);   // stop its animations for good
+    lenis && lenis.start();
+    dispatchEvent(new Event('deki:intro'));
+    intro();
+  }
+
+  /* ── intro ─────────────────────────────────────────────────────── */
+  function intro() {
+    if (!hasGsap || reduce) return;
+    const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+    tl.from('.nav-pill', { y: -30, opacity: 0, duration: 1.2 }, 0.1)
+      .to('.hero .tag-row', { opacity: 1, y: 0, duration: 1.2 }, 0.15)
+      .fromTo('.hero h1 .wi', { yPercent: 115, rotate: 4 }, { yPercent: 0, rotate: 0, duration: 1.4, stagger: 0.045 }, 0.2)
+      .to('.hero .lede', { opacity: 1, y: 0, duration: 1.2 }, 0.65)
+      .to('.hero .cta-row', { opacity: 1, y: 0, duration: 1.2 }, 0.75)
+      .to('.hero .platform-row', { opacity: 1, y: 0, duration: 1.2 }, 0.85)
+      .from('.scroll-cue', { opacity: 0, y: 20, duration: 1 }, 1.0);
+  }
+
+  if (!hasGsap || reduce) {
+    wordEls.forEach((el) => $$('.ws', el).forEach((w) => (w.style.opacity = 1)));
+    return;
+  }
+
+  /* ════════════════════════ scroll scenes ════════════════════════ */
+  const mm = gsap.matchMedia();
+
+  // progress bar
+  gsap.to('.progress i', { scaleX: 1, ease: 'none', scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: S(0.3) } });
+
+  // ambient light drifts with the page
+  if (!lite) {
+    gsap.to('.ambient .a1', { yPercent: 60, xPercent: 30, ease: 'none', scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 } });
+    gsap.to('.ambient .a2', { yPercent: -70, xPercent: -20, ease: 'none', scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 } });
+  }
+
+  // hero text drifts up & softens as you leave
+  gsap.to('.hero-text', {
+    yPercent: -18, opacity: 0, ...(lite ? {} : { filter: 'blur(6px)' }), ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 15%', scrub: true },
+  });
+  gsap.to('.scroll-cue', { opacity: 0, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: '15% top', scrub: true } });
+
+  // reveal batches
+  ScrollTrigger.batch('[data-reveal]', {
+    start: 'top 88%',
+    once: true,
+    onEnter: (els) => gsap.to(els, { opacity: 1, y: 0, duration: lite ? 0.9 : 1.3, ease: 'expo.out', stagger: lite ? 0.05 : 0.09, overwrite: true }),
+  });
+
+  // split headlines rise word by word
+  const splitTriggers = [];
+  function buildSplits(instant) {
+    splitTriggers.splice(0).forEach((t) => t.kill());
+    splitEls.forEach((el) => {
+      if (el.closest('.hero')) return;
+      const words = $$('.wi', el);
+      if (instant) { gsap.set(words, { yPercent: 0, rotate: 0 }); return; }
+      gsap.set(words, { yPercent: 115, rotate: 3 });
+      splitTriggers.push(ScrollTrigger.create({
+        trigger: el, start: 'top 86%', once: true,
+        onEnter: () => gsap.to(words, { yPercent: 0, rotate: 0, duration: lite ? 0.9 : 1.3, ease: 'expo.out', stagger: lite ? 0.02 : 0.035 }),
+      }));
+    });
+  }
+  buildSplits(false);
+
+  // words light up while you read
+  const wordTweens = [];
+  function buildWordScrub() {
+    wordTweens.splice(0).forEach((t) => { t.scrollTrigger && t.scrollTrigger.kill(); t.kill(); });
+    wordEls.forEach((el) => {
+      const words = $$('.ws', el);
+      wordTweens.push(gsap.fromTo(words, { opacity: 0.14 }, {
+        opacity: 1, ease: 'none', stagger: 0.1,
+        scrollTrigger: { trigger: el, start: 'top 82%', end: 'bottom 45%', scrub: S(0.6) },
+      }));
+    });
+  }
+  buildWordScrub();
+
+  document.addEventListener('deki:lang', () => {
+    splitEls.forEach((el) => wrapWords(el, 'w'));
+    wordEls.forEach((el) => wrapWords(el, 'ws'));
+    gsap.set('.hero h1 .wi', { yPercent: 0, rotate: 0 });
+    buildSplits(true);
+    buildWordScrub();
+    formatStats(false);
+    chips.forEach((c, i) => ($('.t2', c).textContent = t2of(CH[i][2])));
+    ScrollTrigger.refresh();
+  });
+
+  /* ── ticker reacts to scroll velocity ── */
+  $$('.ticker-row').forEach((row) => {
+    const track = $('.ticker-track', row);
+    for (let i = 0; i < 3; i++) row.appendChild(track.cloneNode(true));
+    const dir = Number(row.dataset.dir);
+    let x = 0, skew = 0, w = track.offsetWidth || 1, visible = true;
+    new ResizeObserver(() => (w = track.offsetWidth || 1)).observe(track);
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(row);
+    gsap.ticker.add((_, dt) => {
+      if (!visible) return;
+      const v = D.velocity || 0;
+      x -= dir * (0.05 * dt + Math.min(Math.abs(v), 60) * 0.7);
+      x = gsap.utils.wrap(-w, 0, x);
+      skew += (gsap.utils.clamp(-12, 12, -v * 0.6 * dir) - skew) * 0.1;
+      row.style.transform = `translate3d(${x}px,0,0) skewX(${skew}deg)`;
+    });
+  });
+
+  /* ── 01 chaos → one feed ── */
+  const chaos = $('#chaos');
+  const CH = [
+    ['K', '@kip_music', ['новый трек · mp3 · 3:12', 'new track · mp3 · 3:12'], 'icon_play_02'],
+    ['N', 'Nova Lane', ['Тёплый свет · сингл', 'Warm Light · single'], 'icon_like'],
+    ['A', 'Artist One', 'клип_final_v3.mp4', 'icon_flow_01'],
+    ['E', 'Echoes', ['LIVE сегодня в 21:00', 'LIVE tonight 9 pm'], 'icon_feed_01'],
+    ['B', 'Blue Hour', ['демо · 2:48', 'demo · 2:48'], 'icon_play_02'],
+    ['T', 'Тихий город', ['альбом · 9 треков', 'album · 9 tracks'], 'icon_library_02'],
+    ['G', 'Neon Garden', ['репост · 1.2k', 'repost · 1.2k'], 'icon_share_01'],
+    ['M', 'Night Drive', ['ремикс · wav', 'remix · wav'], 'icon_random'],
+    ['S', 'scene.chat', ['+238 непрочитанных', '+238 unread'], 'icon_feed_02'],
+    ['D', 'drop.mp3', ['пересланное сообщение', 'forwarded message'], 'icon_forward_01'],
+    ['F', 'flow.mix', ['плейлист · 24', 'playlist · 24'], 'icon_library_01'],
+    ['R', 'Afterglow', ['новый EP · 5 треков', 'new EP · 5 tracks'], 'icon_play_01'],
+    ['L', 'lofi.room', ['стрим · 312 зрителей', 'stream · 312 watching'], 'icon_repeat'],
+    ['P', 'Pulse', ['тизер · mp4', 'teaser · mp4'], 'icon_flow_02'],
+    ['V', 'Voyage', ['сниппет · 0:30', 'snippet · 0:30'], 'icon_play_02'],
+    ['O', 'Orbit', ['донат · скоро', 'donation · soon'], 'icon_donate_01'],
+    ['Z', 'zvuk.kanal', ['+57 сообщений', '+57 messages'], 'icon_feed_01'],
+    ['H', 'Horizon', ['акустика · 4:05', 'acoustic · 4:05'], 'icon_like'],
+    ['C', 'Cassette', ['архив 2019', 'archive 2019'], 'icon_library_02'],
+    ['W', 'Wave', ['кавер · mp3', 'cover · mp3'], 'icon_random'],
+  ];
+  const AV = [
+    'linear-gradient(135deg,#5aff1f,#1fb800)', 'linear-gradient(135deg,#b46bff,#6a00ff)',
+    'linear-gradient(135deg,#ffb347,#ff5f6d)', 'linear-gradient(135deg,#4facfe,#00f2fe)',
+    'linear-gradient(135deg,#f5f5f7,#8e8e93)', 'linear-gradient(135deg,#ff6ec4,#7873f5)',
+  ];
+  const t2of = (t2) => (Array.isArray(t2) ? t2[window.DEKI_LANG === 'en' ? 1 : 0] : t2);
+  const chips = CH.slice(0, lite ? 12 : CH.length).map(([l, t1, t2, ic], i) => {
+    const c = document.createElement('div');
+    c.className = lite ? 'chaos-chip solid' : 'chaos-chip glass';
+    c.innerHTML = `<span class="av" style="background:${AV[i % AV.length]}">${l}</span><span class="tx"><span class="t1">${t1}</span><span class="t2">${t2of(t2)}</span></span><img class="ic" src="04_Icons/${ic}.svg" alt="">`;
+    chaos.appendChild(c);
+    return c;
+  });
+  const rnd = gsap.utils.random;
+  const seeds = chips.map((_, i) => {
+    // spread chips on an elliptical band around the headline, never right on top of it
+    const a = (i / chips.length) * Math.PI * 2 + rnd(-0.25, 0.25);
+    const r = rnd(0.62, 1.05);
+    return lite
+      ? { a, r, z: rnd(-260, 120), rx: rnd(-25, 25), ry: rnd(-30, 30), rz: rnd(-22, 22), drift: rnd(-1, 1) }
+      : { a, r, z: rnd(-700, 260), rx: rnd(-50, 50), ry: rnd(-60, 60), rz: rnd(-30, 30), drift: rnd(-1, 1) };
+  });
+  const LIST = 6;
+  mm.add({ desk: '(min-width: 900px)', mob: '(max-width: 899px)' }, (ctx) => {
+    const desk = ctx.conditions.desk;
+    const pin = $('.chaos-pin'), after = $('.chaos-after');
+    const vw = () => innerWidth, vh = () => pin.clientHeight || innerHeight;
+    const rowH = desk ? 76 : 66;
+    // phones: the feed stacks right under the headline and shows as many rows as fit
+    const afterBottom = () => after.offsetTop + after.offsetHeight;
+    const rows = () => (desk ? LIST : gsap.utils.clamp(3, LIST, Math.floor((vh() - afterBottom() - 44) / rowH)));
+    const firstY = () => (desk ? -((LIST - 1) / 2) * rowH : afterBottom() + 20 + rowH / 2 - vh() / 2);
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: { trigger: '.chaos-pin', start: 'top top', end: '+=230%', pin: true, scrub: S(1), invalidateOnRefresh: true, anticipatePin: 1 },
+    });
+    chips.forEach((c, i) => {
+      const s = seeds[i];
+      const sx = () => Math.cos(s.a) * s.r * vw() * (desk ? 0.46 : 0.62);
+      const sy = () => Math.sin(s.a) * s.r * vh() * 0.42;
+      gsap.set(c, { x: sx, y: sy, z: s.z, rotationX: s.rx, rotationY: s.ry, rotationZ: s.rz, opacity: 1 });
+      // phase 1 — swirl harder
+      tl.to(c, { x: () => sx() * 1.08 + s.drift * 60, y: () => sy() + s.drift * 90, rotationZ: s.rz + s.drift * 40, rotationY: s.ry * 1.3, duration: 0.35 }, 0);
+      // phase 2 — collapse into one tidy feed
+      const inList = () => i < rows();
+      const lx = () => (desk ? vw() * 0.24 : 0);
+      const ly = () => firstY() + i * rowH;
+      tl.to(c, {
+        x: () => (inList() ? lx() : lx() + rnd(-80, 80)),
+        y: () => (inList() ? ly() : firstY() + rows() * rowH * 0.5),
+        z: () => (inList() ? 0 : (lite ? -600 : -1400)), rotationX: 0, rotationY: 0, rotationZ: 0,
+        opacity: () => (inList() ? 1 : 0), duration: 0.45, ease: 'power3.inOut',
+      }, 0.32 + i * 0.006);
+    });
+    tl.to('.chaos-head', { opacity: 0, yPercent: -40, scale: 0.94, duration: 0.25 }, 0.3)
+      .fromTo('.chaos-after', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.25 }, 0.72)
+      .to({}, { duration: 0.12 });
+    return () => tl.kill();
+  });
+
+  /* ── tilt + spotlight cards ── */
+  if (fine) {
+    $$('.tilt').forEach((card) => {
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        card.style.setProperty('--mx', `${px * 100}%`);
+        card.style.setProperty('--my', `${py * 100}%`);
+        card.style.transform = `perspective(900px) rotateX(${(0.5 - py) * 6}deg) rotateY(${(px - 0.5) * 8}deg) translateZ(0)`;
+      });
+      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+    });
+
+    $$('.magnetic').forEach((b) => {
+      const xTo = gsap.quickTo(b, 'x', { duration: 0.8, ease: 'elastic.out(1, 0.4)' });
+      const yTo = gsap.quickTo(b, 'y', { duration: 0.8, ease: 'elastic.out(1, 0.4)' });
+      b.addEventListener('pointermove', (e) => {
+        const r = b.getBoundingClientRect();
+        xTo((e.clientX - r.left - r.width / 2) * 0.25);
+        yTo((e.clientY - r.top - r.height / 2) * 0.35);
+      });
+      b.addEventListener('pointerleave', () => { xTo(0); yTo(0); });
+    });
+  }
+
+  /* ── 02 sticky phone follows the steps ── */
+  const focus = $('#solution-phone .phone-focus');
+  const phoneImg = $('#solution-phone .phone-img');
+  const dots = $$('.step-dots i');
+  // regions of the feed screenshot each step talks about (fractions of screen height)
+  const FOCUS = [
+    { top: 0, height: 1, opacity: 0, img: 1 },
+    { top: 0.085, height: 0.235, opacity: 1, img: 1.03 },
+    { top: 0.355, height: 0.30, opacity: 1, img: 1.03 },
+    { top: 0.67, height: 0.235, opacity: 1, img: 1.03 },
+  ];
+  const setStep = (i) => {
+    $$('.step').forEach((s, k) => s.classList.toggle('is-active', k === i));
+    dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    const f = FOCUS[i];
+    gsap.to(focus, { top: `${f.top * 100}%`, height: `${f.height * 100}%`, opacity: f.opacity, duration: 1.1, ease: 'expo.out', overwrite: true });
+    gsap.to(phoneImg, { scale: f.img, duration: 1.4, ease: 'expo.out', overwrite: true });
+  };
+  setStep(0);
+  $$('.step').forEach((s, i) => {
+    ScrollTrigger.create({
+      trigger: s, start: 'top 55%', end: 'bottom 55%',
+      onEnter: () => setStep(i), onEnterBack: () => setStep(i),
+    });
+  });
+  mm.add('(min-width: 900px)', () => {
+    const t = gsap.fromTo('#solution-phone', { rotationY: -22, rotationX: 10, rotationZ: -3 }, {
+      rotationY: 14, rotationX: -6, rotationZ: 2, ease: 'none',
+      scrollTrigger: { trigger: '.scrolly', start: 'top bottom', end: 'bottom top', scrub: 1 },
+    });
+    const c = $$('#solution-phone .chip').map((chip, i) => gsap.fromTo(chip, { y: 80 * (i % 2 ? 1 : -1) }, {
+      y: -80 * (i % 2 ? 1 : -1), ease: 'none',
+      scrollTrigger: { trigger: '.scrolly', start: 'top bottom', end: 'bottom top', scrub: 1.5 },
+    }));
+    return () => { t.kill(); c.forEach((x) => x.kill()); };
+  });
+  gsap.from('#solution-phone .chip', {
+    scale: 0.6, opacity: 0, duration: 1.2, ease: 'back.out(1.6)', stagger: 0.12,
+    scrollTrigger: { trigger: '.sticky-phone', start: 'top 70%' },
+  });
+
+  /* ── 04 studio phones fan out ── */
+  const stats = $$('.stat b[data-count]');
+  function fmt(v, el) {
+    const dec = String(el.dataset.count).includes('.') ? 1 : 0;
+    const s = new Intl.NumberFormat(window.DEKI_LANG === 'en' ? 'en-US' : 'ru-RU', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(v);
+    return (el.dataset.prefix || '') + s + (el.dataset.suffix || '');
+  }
+  function formatStats(final) {
+    stats.forEach((el) => { if (final || el._done) el.textContent = fmt(Number(el.dataset.count), el); });
+  }
+  mm.add({ desk: '(min-width: 761px)', mob: '(max-width: 760px)' }, (ctx) => {
+    const spread = ctx.conditions.desk ? 58 : 30;
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: { trigger: '#studio-stage', start: 'top top', end: '+=150%', pin: true, scrub: S(1), anticipatePin: 1 },
+    });
+    tl.fromTo('.studio-phones .phone-l', { xPercent: 0, yPercent: 30, rotationX: 58, rotationZ: -18, rotationY: 0, scale: 0.72 },
+      { xPercent: -spread, yPercent: 0, rotationX: 0, rotationZ: -4, rotationY: 16, scale: 1, duration: 1, ease: 'power2.inOut' }, 0)
+      .fromTo('.studio-phones .phone-r', { xPercent: 0, yPercent: 40, rotationX: 58, rotationZ: 14, rotationY: 0, scale: 0.68 },
+        { xPercent: spread, yPercent: 4, rotationX: 0, rotationZ: 4, rotationY: -16, scale: 1, duration: 1, ease: 'power2.inOut' }, 0)
+      .fromTo('.studio-phones .phone-img', { scale: 1.12 }, { scale: 1, duration: 1 }, 0)
+      .fromTo('.stat', { opacity: 0, scale: 0.6, y: 40 }, { opacity: 1, scale: 1, y: 0, duration: 0.35, stagger: 0.08, ease: 'back.out(1.7)' }, 0.55)
+      .to({}, { duration: 0.25 });
+    return () => tl.kill();
+  });
+  stats.forEach((el) => {
+    const v = { n: 0 };
+    ScrollTrigger.create({
+      trigger: '#studio-stage', start: 'top top', end: '+=150%',
+      onUpdate: (self) => {
+        if (el._done || self.progress < 0.5) return;
+        el._done = true;
+        gsap.to(v, { n: Number(el.dataset.count), duration: 2, ease: 'expo.out', onUpdate: () => (el.textContent = fmt(v.n, el)) });
+      },
+    });
+  });
+
+  gsap.to('.flow-line line', {
+    strokeDashoffset: 0, ease: 'none',
+    scrollTrigger: { trigger: '#flow', start: 'top 80%', end: 'bottom 55%', scrub: S(1) },
+  });
+  gsap.from('.flow-step .badge', {
+    scale: 0, duration: 1, ease: 'back.out(2)', stagger: 0.15,
+    scrollTrigger: { trigger: '#flow', start: 'top 80%' },
+  });
+
+  /* ── CTA + footer ── */
+  gsap.fromTo('.cta-glow', { scale: 0.5, opacity: 0.3 }, {
+    scale: 1.1, opacity: 1, ease: 'none',
+    scrollTrigger: { trigger: '.cta-final', start: 'top bottom', end: 'bottom bottom', scrub: true },
+  });
+  gsap.fromTo('.word span', { yPercent: 100, rotate: 8 }, {
+    yPercent: 0, rotate: 0, ease: 'none', stagger: 0.06,
+    scrollTrigger: { trigger: '.footer', start: 'top bottom', end: 'bottom bottom', scrub: S(1) },
+  });
+
+  /* ── nav active link ── */
+  const links = $$('.nav .links a');
+  links.forEach((a) => {
+    const sec = $(a.getAttribute('href'));
+    if (!sec) return;
+    ScrollTrigger.create({
+      trigger: sec, start: 'top 50%', end: 'bottom 50%',
+      onToggle: (self) => a.classList.toggle('is-active', self.isActive),
+    });
+  });
+
+  addEventListener('load', () => ScrollTrigger.refresh());
+  document.fonts && document.fonts.ready.then(() => ScrollTrigger.refresh());
+})();
